@@ -1,6 +1,7 @@
 ﻿using System;
 
 namespace UsVisaChecker.AF.Infrastructure.Extensions;
+
 internal static class GeneralExtensions
 {
     internal static string Format(this string value, params object[] values)
