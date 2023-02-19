@@ -6,8 +6,7 @@ namespace UsVisaChecker.AF.Models;
 
 public class AvailableDates
 {
-    [JsonPropertyName("date")]
-    public DateTime Date { get; set; }
+    [JsonPropertyName("date")] public DateTime Date { get; set; }
 
     public override string ToString()
     {

@@ -1,25 +1,27 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using UsVisaChecker.AF.Infrastructure.Extensions;
+using UsVisaChecker.AF.Models;
 using UsVisaChecker.AF.Services;
 
 namespace UsVisaChecker.AF;
 
 public class VisaCheckerFunction
 {
-    private readonly EmailService emailService;
-    private readonly VisaService visaService;
     private readonly IConfiguration configuration;
+    private readonly EmailService emailService;
     private readonly ILogger<VisaCheckerFunction> logger;
+    private readonly VisaService visaService;
 
-    public VisaCheckerFunction(EmailService emailService, VisaService visaService, IConfiguration configuration, ILogger<VisaCheckerFunction> logger)
+    public VisaCheckerFunction(EmailService emailService, VisaService visaService, IConfiguration configuration,
+        ILogger<VisaCheckerFunction> logger)
     {
         this.emailService = emailService;
         this.visaService = visaService;
@@ -35,7 +37,8 @@ public class VisaCheckerFunction
 
 
     [FunctionName("InvokeChecker")]
-    public async Task<IActionResult> InvokeChecker([HttpTrigger(AuthorizationLevel.Function, "get", Route = "Invoke")] HttpRequest req)
+    public async Task<IActionResult> InvokeChecker(
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "Invoke")] HttpRequest req)
     {
         try
         {
@@ -49,7 +52,8 @@ public class VisaCheckerFunction
     }
 
     [FunctionName("Test")]
-    public static IActionResult RunTest([HttpTrigger(AuthorizationLevel.Function, "get", Route = "Test")] HttpRequest req)
+    public static IActionResult RunTest(
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "Test")] HttpRequest req)
     {
         return new OkObjectResult("OK");
     }
@@ -75,7 +79,7 @@ public class VisaCheckerFunction
 
             if (earliestDate is not null)
             {
-                var emailRes = await emailService.SendEmail(new Models.EmailSendRequestModel()
+                var emailRes = await emailService.SendEmail(new EmailSendRequestModel
                 {
                     Recipient = configuration["EmailSend:Recipient"],
                     BodyContent = $"There is an available date for visa appointment for {earliestDate}",
@@ -93,5 +97,3 @@ public class VisaCheckerFunction
         }
     }
 }
-
-

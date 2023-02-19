@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -8,17 +6,21 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using UsVisaChecker.AF.Infrastructure;
 using UsVisaChecker.AF.Infrastructure.Extensions;
 using UsVisaChecker.AF.Infrastructure.Providers;
 using UsVisaChecker.AF.Models;
 
 namespace UsVisaChecker.AF.Services;
+
 public class VisaService
 {
     private readonly IConfiguration configuration;
-    private readonly IOptions<VisaOptions> options;
     private readonly ILogger<VisaService> logger;
+    private readonly IOptions<VisaOptions> options;
 
     public VisaService(IConfiguration configuration, IOptions<VisaOptions> options, ILogger<VisaService> logger)
     {
@@ -33,7 +35,7 @@ public class VisaService
         var pass = HttpUtility.UrlEncode(options.Value.Pass);
 
         var payload = Constants.LOGIN_PAYLOAD_F.Format(HttpUtility.UrlEncode(options.Value.Email),
-                                                       HttpUtility.UrlEncode(options.Value.Pass));
+            HttpUtility.UrlEncode(options.Value.Pass));
 
         var stringContent = new StringContent(payload, Encoding.UTF8, "application/x-www-form-urlencoded");
         var headers = HeaderProvider.GetCommonWithValues(referer: Constants.Endpoints.SIGN_IN);
@@ -49,7 +51,7 @@ public class VisaService
         if (!httpRes.IsSuccessStatusCode)
         {
             var ex = await httpRes.Content.ReadAsStringAsync();
-            throw new System.Exception(ex);
+            throw new Exception(ex);
         }
 
         logger.LogInformation("Login Response Headers: {Headers}",
@@ -60,12 +62,12 @@ public class VisaService
         logger.LogInformation("Login ResponseBody: {ResponseBody}", responseBody);
 
         var cookie = httpRes
-                        .Headers
-                        .FirstOrDefault(i => i.Key == "Set-Cookie")
-                        .Value.FirstOrDefault();
+            .Headers
+            .FirstOrDefault(i => i.Key == "Set-Cookie")
+            .Value.FirstOrDefault();
 
         logger.LogInformation("loginCookie {cookie}", cookie);
-        
+
         return cookie;
     }
 
@@ -73,8 +75,8 @@ public class VisaService
     {
         var appUrl = Constants.Endpoints.APPOINTMENT_F.Format(configuration["ApplicationId"]);
         var refererUrl = Constants.Endpoints.GETDATES_REFERER_F.Format(configuration["ApplicationId"]);
-        var headers = HeaderProvider.GetCommonWithValues(cookie: cookie,
-                                                         referer: refererUrl);
+        var headers = HeaderProvider.GetCommonWithValues(cookie,
+            refererUrl);
 
         using var client = new HttpClient();
         client.SetHeaders(headers);
@@ -93,8 +95,10 @@ public class VisaService
         var result = await client.GetFromJsonAsync<List<AvailableDates>>(appUrl);
 
         if (result != null && result.Any())
-            logger.LogInformation("Available dates: " + string.Join(',', result.OrderBy(i => i.Date).Select(i => i.Date.ToString("yyyy-MM-dd"))));
+            logger.LogInformation("Available dates: " +
+                                  string.Join(',',
+                                      result.OrderBy(i => i.Date).Select(i => i.Date.ToString("yyyy-MM-dd"))));
 
-        return result ?? new();
+        return result ?? new List<AvailableDates>();
     }
 }

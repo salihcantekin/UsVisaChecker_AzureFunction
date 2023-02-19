@@ -1,18 +1,18 @@
-﻿using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+﻿using System;
+using System.Net;
+using System.Net.Mail;
+using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using System;
-using System.Globalization;
-using System.Net;
-using System.Net.Mail;
-using System.Threading;
 using UsVisaChecker.AF;
 using UsVisaChecker.AF.Models;
 using UsVisaChecker.AF.Services;
 
 [assembly: FunctionsStartup(typeof(Startup))]
+
 namespace UsVisaChecker.AF;
+
 public class Startup : FunctionsStartup
 {
     public override void Configure(IFunctionsHostBuilder builder)
@@ -22,12 +22,12 @@ public class Startup : FunctionsStartup
         builder.Services.AddApplicationInsightsTelemetry(context.Configuration);
 
         builder.Services.AddOptions<EmailOptions>()
-                        .Bind(context.Configuration.GetSection("EmailOptions"))
-                        .ValidateDataAnnotations();
+            .Bind(context.Configuration.GetSection("EmailOptions"))
+            .ValidateDataAnnotations();
 
         builder.Services.AddOptions<VisaOptions>()
-                        .Bind(context.Configuration.GetSection("Visa"))
-                        .ValidateDataAnnotations();
+            .Bind(context.Configuration.GetSection("Visa"))
+            .ValidateDataAnnotations();
 
         builder.Services.AddSingleton<VisaService>();
         builder.Services.AddScoped<EmailService>();
@@ -38,7 +38,7 @@ public class Startup : FunctionsStartup
             var configuration = sp.GetRequiredService<IConfiguration>();
             var fromAddress = new MailAddress(options.Value.FromAddress, options.Value.DefaultFromDisplayName);
 
-            string fromPassword = configuration["EmailProviderPassword"];
+            var fromPassword = configuration["EmailProviderPassword"];
 
             var smtp = new SmtpClient
             {
