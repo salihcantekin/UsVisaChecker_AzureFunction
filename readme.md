@@ -60,6 +60,26 @@ The application ID configuration should include the application ID for your visa
 
 To deploy this function to Azure, you can follow the [official documentation](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-first-azure-function-azure-cli).
 
+## Config File Content
+```json
+{
+"EmailOptions": {
+    "FromAddress": "",
+    "DefaultFromDisplayName": ""
+  },
+  "EmailProviderPassword": "",
+  "Visa": {
+    "Email": "",
+    "Pass": ""
+  },
+  "InitialDate": "2023-01-01",
+  "EmailSend": {
+    "Recipient": ""
+  },
+  "ApplicationId": ""
+}
+```
+
 ## Usage
 
 Once the function is deployed and configured, it will periodically check for available dates on the USA Visa application website. If a new date is found, an email notification will be sent to the recipient's email address specified in the configuration.
