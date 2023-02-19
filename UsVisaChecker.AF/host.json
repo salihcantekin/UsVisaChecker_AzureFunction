@@ -1,0 +1,30 @@
+{
+  "version": "2.0",
+  "logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "System": "Information",
+      "Microsoft": "Information"
+    },
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": false
+      }
+    }
+  },
+
+  "EmailOptions": {
+    "FromAddress": "",
+    "DefaultFromDisplayName": ""
+  },
+  "EmailProviderPassword": "",
+  "Visa": {
+    "Email": "",
+    "Pass": ""
+  },
+  "InitialDate": "2023-01-01",
+  "EmailSend": {
+    "Recipient": ""
+  },
+  "ApplicationId": ""
+}
