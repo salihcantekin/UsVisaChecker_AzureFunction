@@ -14,21 +14,21 @@ namespace UsVisaChecker.AF;
 
 public class VisaCheckerFunction
 {
-    private readonly EmailService emailService;
+    private readonly NotificationService notificationService;
     private readonly VisaService visaService;
     private readonly IConfiguration configuration;
     private readonly ILogger<VisaCheckerFunction> logger;
 
-    public VisaCheckerFunction(EmailService emailService, VisaService visaService, IConfiguration configuration, ILogger<VisaCheckerFunction> logger)
+    public VisaCheckerFunction(NotificationService notificationService, VisaService visaService, IConfiguration configuration, ILogger<VisaCheckerFunction> logger)
     {
-        this.emailService = emailService;
+        this.notificationService = notificationService;
         this.visaService = visaService;
         this.configuration = configuration;
         this.logger = logger;
     }
 
     [FunctionName("VisaChecker")]
-    public async Task VisaChecker([TimerTrigger("0 0 */1 * * *", RunOnStartup = true)] TimerInfo myTimer)
+    public async Task VisaChecker([TimerTrigger("%TimerInterval%", RunOnStartup = true)] TimerInfo myTimer)
     {
         await CheckVisa();
     }
@@ -63,27 +63,35 @@ public class VisaCheckerFunction
 
             var loginCookie = await visaService.LoginRequest();
             var availableDates = await visaService.GetAvailableDates(loginCookie);
+
+            if (availableDates is null)
+            {
+                logger.LogError("No available date found!");
+                return;
+            }
+
             var initialDate = configuration.GetValue<DateTime>("InitialDate");
 
-            logger.LogInformation("{AvailableCount} available dates found", availableDates.Count);
             logger.LogInformation("initialDate: {initialDate}", initialDate.Format());
+            logger.LogInformation("{AvailableCount} available dates found", availableDates.Count);
 
             var earliestDate = availableDates.Where(i => i.Date < initialDate).FirstOrDefault();
+            logger.LogInformation("New Earliest: {NewEarliestDate}", earliestDate);
 
-            logger.LogInformation("Earliest: {Earliest}", availableDates.Min(i => i.Date).Format());
-            logger.LogInformation("New Earliest: {NewEarliestDate}", earliestDate?.ToString());
-
-            if (earliestDate is not null)
+            if (availableDates.Any())
             {
-                var emailRes = await emailService.SendEmail(new Models.EmailSendRequestModel()
-                {
-                    Recipient = configuration["EmailSend:Recipient"],
-                    BodyContent = $"There is an available date for visa appointment for {earliestDate}",
-                    ToDisplayName = "Salih Cantekin",
-                    Subject = "US Visa Appointment Available"
-                });
+                logger.LogInformation("Earliest: {Earliest}", availableDates?.Min(i => i.Date));
 
-                logger.LogInformation("Email sent result: {EmailSuccess}!", emailRes);
+                if (earliestDate is not null)
+                {
+                    await notificationService.SendNotification(new Models.NotificationRequestModel()
+                    {
+                        CreateDate = DateTime.Now,
+                        EarliestDate = earliestDate.Date,
+                        OriginalDate = initialDate,
+                        TotalAvailableDate = availableDates?.Count ?? 0,
+                    });
+                }
             }
         }
         catch (Exception ex)

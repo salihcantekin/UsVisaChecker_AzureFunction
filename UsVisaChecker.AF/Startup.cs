@@ -31,14 +31,13 @@ public class Startup : FunctionsStartup
 
         builder.Services.AddSingleton<VisaService>();
         builder.Services.AddScoped<EmailService>();
+        builder.Services.AddScoped<NotificationService>();
 
         builder.Services.AddScoped(sp =>
         {
             var options = sp.GetRequiredService<IOptions<EmailOptions>>();
             var configuration = sp.GetRequiredService<IConfiguration>();
             var fromAddress = new MailAddress(options.Value.FromAddress, options.Value.DefaultFromDisplayName);
-
-            string fromPassword = configuration["EmailProviderPassword"];
 
             var smtp = new SmtpClient
             {
@@ -47,7 +46,7 @@ public class Startup : FunctionsStartup
                 EnableSsl = true,
                 DeliveryMethod = SmtpDeliveryMethod.Network,
                 UseDefaultCredentials = false,
-                Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
+                Credentials = new NetworkCredential(fromAddress.Address, configuration["EmailProviderPassword"])
             };
 
             return smtp;

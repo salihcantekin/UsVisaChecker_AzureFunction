@@ -41,8 +41,8 @@ public class VisaService
         using var client = new HttpClient();
         client.SetHeaders(headers);
 
-        logger.LogInformation("Login Url: {Url}", Constants.Endpoints.SIGN_IN);
-        logger.LogInformation("Payload: {Payload}", payload);
+        logger.LogDebug("Login Url: {Url}", Constants.Endpoints.SIGN_IN);
+        logger.LogDebug("Payload: {Payload}", payload);
 
         var httpRes = await client.PostAsync(Constants.Endpoints.SIGN_IN, stringContent);
 
@@ -52,19 +52,19 @@ public class VisaService
             throw new System.Exception(ex);
         }
 
-        logger.LogInformation("Login Response Headers: {Headers}",
+        logger.LogDebug("Login Response Headers: {Headers}",
             string.Join(',', httpRes.Headers.Select(i => $"{i.Key}:{i.Value}")));
 
         var responseBody = await httpRes.Content.ReadAsStringAsync();
 
-        logger.LogInformation("Login ResponseBody: {ResponseBody}", responseBody);
+        logger.LogDebug("Login ResponseBody: {ResponseBody}", responseBody);
 
         var cookie = httpRes
                         .Headers
                         .FirstOrDefault(i => i.Key == "Set-Cookie")
                         .Value.FirstOrDefault();
 
-        logger.LogInformation("loginCookie {cookie}", cookie);
+        logger.LogDebug("loginCookie {cookie}", cookie);
         
         return cookie;
     }
@@ -79,16 +79,16 @@ public class VisaService
         using var client = new HttpClient();
         client.SetHeaders(headers);
 
-        logger.LogInformation("GetAvailableDates Url: {Url}", appUrl);
+        logger.LogDebug("GetAvailableDates Url: {Url}", appUrl);
 
         var httpRes = await client.GetAsync(appUrl);
 
-        logger.LogInformation("Dates Response Headers: {Headers}",
+        logger.LogDebug("Dates Response Headers: {Headers}",
             string.Join(',', httpRes.Headers.Select(i => $"{i.Key}:{i.Value}")));
 
         var responseBody = await httpRes.Content.ReadAsStringAsync();
 
-        logger.LogInformation("GetAvailableDates ResponseBody: {ResponseBody}", responseBody);
+        logger.LogDebug("GetAvailableDates ResponseBody: {ResponseBody}", responseBody);
 
         var result = await client.GetFromJsonAsync<List<AvailableDates>>(appUrl);
 

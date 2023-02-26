@@ -24,7 +24,9 @@
   },
   "InitialDate": "2023-01-01",
   "EmailSend": {
-    "Recipient": ""
+    "Recipient": "",
+    "ToDisplayName": ""
   },
-  "ApplicationId": ""
+  "ApplicationId": "",
+  "TimerInterval": "0 */5 0 * * *"
 }
